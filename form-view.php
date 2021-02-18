@@ -79,7 +79,7 @@ error_reporting(E_ALL);
         </fieldset>
 
         <fieldset>
-            <legend>Products</legend><?php foreach ($products as $i => $product): ?>
+            <legend>Products</legend><?php foreach ($products->getProducts() as $i => $product): ?>
                 <label>
                     <input type="number" value="0" min="0" max="10"
                            name="products[<?php echo $i ?>]"/> <?php echo $product->getName() ?> -

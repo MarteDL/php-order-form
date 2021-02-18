@@ -3,6 +3,7 @@
 //this line makes PHP behave in a more strict way
 declare(strict_types=1);
 
+use JetBrains\PhpStorm\NoReturn;
 use JetBrains\PhpStorm\Pure;
 
 ini_set('display_errors', '1');
@@ -88,7 +89,7 @@ function getTotalValue(): string
     }
 }
 
-function displayBoughtItems(array $products, string $totalValue): string
+function displayBoughtItems(object $products, string $totalValue): string
 {
     $priceOfThisOrder = 0;
     if (isset($_POST["express_delivery"])) {
@@ -98,7 +99,7 @@ function displayBoughtItems(array $products, string $totalValue): string
 //    $mailMessage = "Thank you for your order at 'the Personal Ham Processors! (\r\n)You ordered: ";
     $alertMessage = '<div class="alert alert-success" role="alert"><p>Your form has been sent! Thank you for your order.</p>Your order: ';
     $deliveryTime = calculateDeliveryTime();
-    foreach ($products as $i => $product) {
+    foreach ($products->getProducts() as $i => $product) {
         if (!empty($_POST["products"][$i])) {
             $priceOfThisOrder += ($product->getPrice() * ($_POST["products"][$i]));
             $alertMessage .= "<li>" . $_POST["products"][$i] . "x " . $product->getName() . "</li>";
@@ -127,7 +128,7 @@ function displayBoughtItems(array $products, string $totalValue): string
     return $deliveryTime;
 }
 
-function submitOrder($products, $totalValue) : void
+#[NoReturn] function submitOrder($products, $totalValue) : void
 {
     $_SESSION["message"] = displayBoughtItems($products, $totalValue);
     unset($_POST["email"]);
@@ -139,19 +140,20 @@ function submitOrder($products, $totalValue) : void
     exit;
 }
 
-function chooseProducts(): array
+function getProductList(): object
 {
-    $page = basename($_SERVER['REQUEST_URI']);
+//    $page = basename($_SERVER['REQUEST_URI']);
 
-    if ($page == "index.php?food=0") {
-        return [
+    if ($_GET["food"] == 0) {
+        return new ProductList([
             new Product('Cola', 2),
             new Product('Fanta', 2),
             new Product('Sprite', 2),
             new Product('Ice-tea', 3),
-        ];
-    } else if ($page == "index.php?food=2") {
-        return [
+        ]);
+
+    } else if ($_GET["food"] == 2) {
+        return new ProductList([
             new Product('Club Cheese', 3),
             new Product('Club Cheese & Ham', 4),
             new Product('Club Chicken', 4),
@@ -160,15 +162,15 @@ function chooseProducts(): array
             new Product('Fanta', 2),
             new Product('Sprite', 2),
             new Product('Ice-tea', 3),
-        ];
+        ]);
     } else {
-        return [
+        return new ProductList([
             new Product('Club Ham', 3.20),
             new Product('Club Cheese', 3),
             new Product('Club Cheese & Ham', 4),
             new Product('Club Chicken', 4),
             new Product('Club Salmon', 5)
-        ];
+        ]);
     }
 }
 
@@ -194,7 +196,22 @@ class Product
     }
 }
 
-$products = chooseProducts();
+class ProductList {
+
+    private array $products;
+
+    public function __construct(array $products)
+    {
+        $this->products = $products;
+    }
+
+    public function getProducts(): array
+    {
+        return $this->products;
+    }
+}
+
+$products = getProductList();
 
 $totalValue = getTotalValue();
 
