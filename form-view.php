@@ -81,8 +81,9 @@ error_reporting(E_ALL);
         <fieldset>
             <legend>Products</legend><?php foreach ($products as $i => $product): ?>
                 <label>
-                    <input type="number" value="0" min="0" max="10" name="products[<?php echo $i ?>]"/> <?php echo $product['name'] ?> -
-                    &euro; <?php echo number_format($product['price'], 2) ?></label><br />
+                    <input type="number" value="0" min="0" max="10"
+                           name="products[<?php echo $i ?>]"/> <?php echo $product->getName() ?> -
+                    &euro; <?php echo number_format($product->getPrice(), 2) ?></label><br/>
             <?php endforeach; ?>
         </fieldset>
 

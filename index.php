@@ -3,6 +3,8 @@
 //this line makes PHP behave in a more strict way
 declare(strict_types=1);
 
+use JetBrains\PhpStorm\Pure;
+
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
@@ -93,14 +95,14 @@ function displayBoughtItems(array $products, string $totalValue): string
         $priceOfThisOrder += 5;
     }
 
-    $mailMessage = "Thank you for your order at 'the Personal Ham Processors! (\r\n)You ordered: ";
+//    $mailMessage = "Thank you for your order at 'the Personal Ham Processors! (\r\n)You ordered: ";
     $alertMessage = '<div class="alert alert-success" role="alert"><p>Your form has been sent! Thank you for your order.</p>Your order: ';
     $deliveryTime = calculateDeliveryTime();
     foreach ($products as $i => $product) {
         if (!empty($_POST["products"][$i])) {
-            $priceOfThisOrder += ($product["price"] * ($_POST["products"][$i]));
-            $alertMessage .= "<li>" . $_POST["products"][$i] . "x " . $product["name"] . "</li>";
-            $mailMessage .= $_POST["products"][$i] . "x " . $product["name"] . "(\r\n)";
+            $priceOfThisOrder += ($product->getPrice() * ($_POST["products"][$i]));
+            $alertMessage .= "<li>" . $_POST["products"][$i] . "x " . $product->getName() . "</li>";
+//            $mailMessage .= $_POST["products"][$i] . "x " . $product["name"] . "(\r\n)";
             unset($_POST["product"]);
         }
     }
@@ -115,7 +117,7 @@ function displayBoughtItems(array $products, string $totalValue): string
     return $alertMessage . "</br><p>The total cost of this order is &euro;" . $priceOfThisOrder . " and it will be delivered at your house at " . $deliveryTime . ".</p></ul></div>";
 }
 
-function calculateDeliveryTime(): string
+#[Pure] function calculateDeliveryTime(): string
 {
     if (isset($_POST["express_delivery"])) {
         $deliveryTime = date('H:i', strtotime("+ 45 minutes"));
@@ -125,7 +127,7 @@ function calculateDeliveryTime(): string
     return $deliveryTime;
 }
 
-function submitOrder($products, $totalValue)
+function submitOrder($products, $totalValue) : void
 {
     $_SESSION["message"] = displayBoughtItems($products, $totalValue);
     unset($_POST["email"]);
@@ -137,41 +139,62 @@ function submitOrder($products, $totalValue)
     exit;
 }
 
-function chooseProductsArray(): array
+function chooseProducts(): array
 {
     $page = basename($_SERVER['REQUEST_URI']);
 
     if ($page == "index.php?food=0") {
         return [
-            ['name' => 'Cola', 'price' => 2],
-            ['name' => 'Fanta', 'price' => 2],
-            ['name' => 'Sprite', 'price' => 2],
-            ['name' => 'Ice-tea', 'price' => 3],
+            new Product('Cola', 2),
+            new Product('Fanta', 2),
+            new Product('Sprite', 2),
+            new Product('Ice-tea', 3),
         ];
     } else if ($page == "index.php?food=2") {
         return [
-            ['name' => 'Club Ham', 'price' => 3.20],
-            ['name' => 'Club Cheese', 'price' => 3],
-            ['name' => 'Club Cheese & Ham', 'price' => 4],
-            ['name' => 'Club Chicken', 'price' => 4],
-            ['name' => 'Club Salmon', 'price' => 5],
-            ['name' => 'Cola', 'price' => 2],
-            ['name' => 'Fanta', 'price' => 2],
-            ['name' => 'Sprite', 'price' => 2],
-            ['name' => 'Ice-tea', 'price' => 3],
+            new Product('Club Cheese', 3),
+            new Product('Club Cheese & Ham', 4),
+            new Product('Club Chicken', 4),
+            new Product('Club Salmon', 5),
+            new Product('Cola', 2),
+            new Product('Fanta', 2),
+            new Product('Sprite', 2),
+            new Product('Ice-tea', 3),
         ];
     } else {
         return [
-            ['name' => 'Club Ham', 'price' => 3.20],
-            ['name' => 'Club Cheese', 'price' => 3],
-            ['name' => 'Club Cheese & Ham', 'price' => 4],
-            ['name' => 'Club Chicken', 'price' => 4],
-            ['name' => 'Club Salmon', 'price' => 5],
+            new Product('Club Ham', 3.20),
+            new Product('Club Cheese', 3),
+            new Product('Club Cheese & Ham', 4),
+            new Product('Club Chicken', 4),
+            new Product('Club Salmon', 5)
         ];
     }
 }
 
-$products = chooseProductsArray();
+class Product
+{
+    private string $name;
+    private float $price;
+
+    public function __construct(string $name, float $price)
+    {
+        $this->name = $name;
+        $this->price = $price;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getPrice(): float
+    {
+        return $this->price;
+    }
+}
+
+$products = chooseProducts();
 
 $totalValue = getTotalValue();
 
@@ -182,7 +205,7 @@ if (isset($_POST["submit"])) {
     if (validateForm($email_error, $street_error, $streetnumber_error, $city_error, $zipcode_error)) {
         submitOrder($products, $totalValue);
     }
-} else {
+} else if(isset($_SESSION["street"], $_SESSION["streetnumber"], $_SESSION["city"], $_SESSION["zipcode"])) {
     displaySessions();
 }
 
