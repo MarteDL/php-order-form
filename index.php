@@ -23,14 +23,15 @@ function whatIsHappening()
     var_dump($_SESSION);
 }
 
-function displaySessions() {
+function displaySessions()
+{
     $_POST["street"] = $_SESSION["street"];
     $_POST["streetnumber"] = $_SESSION["streetnumber"];
     $_POST["city"] = $_SESSION["city"];
     $_POST["zipcode"] = $_SESSION["zipcode"];
 }
 
-function setSession()
+function setSessionVariables()
 {
     $_SESSION["street"] = $_POST["street"];
     $_SESSION["streetnumber"] = $_POST["streetnumber"];
@@ -136,36 +137,52 @@ function submitOrder($products, $totalValue)
     exit;
 }
 
-$products = [
-    ['name' => 'Club Ham', 'price' => 3.20],
-    ['name' => 'Club Cheese', 'price' => 3],
-    ['name' => 'Club Cheese & Ham', 'price' => 4],
-    ['name' => 'Club Chicken', 'price' => 4],
-    ['name' => 'Club Salmon', 'price' => 5]
-];
+function chooseProductsArray(): array
+{
+    $page = basename($_SERVER['REQUEST_URI']);
 
-$page = basename($_SERVER['REQUEST_URI']);
-
-if ($page == "index.php?food=0") {
-    $products = [
-        ['name' => 'Cola', 'price' => 2],
-        ['name' => 'Fanta', 'price' => 2],
-        ['name' => 'Sprite', 'price' => 2],
-        ['name' => 'Ice-tea', 'price' => 3],
-    ];
+    if ($page == "index.php?food=0") {
+        return [
+            ['name' => 'Cola', 'price' => 2],
+            ['name' => 'Fanta', 'price' => 2],
+            ['name' => 'Sprite', 'price' => 2],
+            ['name' => 'Ice-tea', 'price' => 3],
+        ];
+    } else if ($page == "index.php?food=2") {
+        return [
+            ['name' => 'Club Ham', 'price' => 3.20],
+            ['name' => 'Club Cheese', 'price' => 3],
+            ['name' => 'Club Cheese & Ham', 'price' => 4],
+            ['name' => 'Club Chicken', 'price' => 4],
+            ['name' => 'Club Salmon', 'price' => 5],
+            ['name' => 'Cola', 'price' => 2],
+            ['name' => 'Fanta', 'price' => 2],
+            ['name' => 'Sprite', 'price' => 2],
+            ['name' => 'Ice-tea', 'price' => 3],
+        ];
+    } else {
+        return [
+            ['name' => 'Club Ham', 'price' => 3.20],
+            ['name' => 'Club Cheese', 'price' => 3],
+            ['name' => 'Club Cheese & Ham', 'price' => 4],
+            ['name' => 'Club Chicken', 'price' => 4],
+            ['name' => 'Club Salmon', 'price' => 5],
+        ];
+    }
 }
+
+$products = chooseProductsArray();
 
 $totalValue = getTotalValue();
 
 $email_error = $street_error = $streetnumber_error = $city_error = $zipcode_error = "";
 
 if (isset($_POST["submit"])) {
-    setSession();
+    setSessionVariables();
     if (validateForm($email_error, $street_error, $streetnumber_error, $city_error, $zipcode_error)) {
         submitOrder($products, $totalValue);
     }
-}
-else {
+} else {
     displaySessions();
 }
 

@@ -29,10 +29,13 @@ error_reporting(E_ALL);
     <nav>
         <ul class="nav">
             <li class="nav-item">
-                <a class="nav-link active" href="?food=1">Order food</a>
+                <a class="nav-link active" href="?food=1">Order only food</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="?food=0">Order drinks</a>
+                <a class="nav-link" href="?food=0">Order only drinks</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="?food=2">Order both</a>
             </li>
         </ul>
     </nav>
