@@ -42,44 +42,6 @@ function setSessionVariables()
     $_SESSION["zipcode"] = $_POST["zipcode"];
 }
 
-function validateForm(&$email_error, &$street_error, &$streetnumber_error, &$city_error, &$zipcode_error): bool
-{
-    if (empty($_POST["email"])) {
-        $email_error = "* E-mail is a required field";
-    } else if (filter_var($_POST["email"], FILTER_VALIDATE_EMAIL) == false) {
-        $_POST["email"] = "";
-        $email_error = "* Your e-mail address is not valid";
-    }
-
-    if (empty($_POST["street"])) {
-        $street_error = "* Street is a required field";
-    }
-
-    if (empty($_POST["streetnumber"])) {
-        $streetnumber_error = "* Streetnumber is a required field";
-    } else if (!is_numeric($_POST["streetnumber"])) {
-        $_POST["streetnumber"] = "";
-        $streetnumber_error = "* Your streetnumber is not a number";
-    }
-
-    if (empty($_POST["city"])) {
-        $city_error = "* City is a required field";
-    }
-
-    if (empty($_POST["zipcode"])) {
-        $zipcode_error = "* Zipcode is a required field";
-    } else if (!is_numeric($_POST["zipcode"])) {
-        $_POST["zipcode"] = "";
-        $zipcode_error = "* Your zipcode is not a number";
-    }
-
-    if (!empty($_POST["email"]) && !empty($_POST["street"]) && !empty($_POST["streetnumber"]) && !empty($_POST["city"]) && !empty($_POST["zipcode"])) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 function getTotalValue(): string
 {
     if (isset($_COOKIE["totalValue"])) {
@@ -96,14 +58,14 @@ function displayBoughtItems(object $products, string $totalValue): string
         $priceOfThisOrder += 5;
     }
 
-//    $mailMessage = "Thank you for your order at 'the Personal Ham Processors! (\r\n)You ordered: ";
+//  $mailMessage = "Thank you for your order at 'the Personal Ham Processors! (\r\n)You ordered: ";
     $alertMessage = '<div class="alert alert-success" role="alert"><p>Your form has been sent! Thank you for your order.</p>Your order: ';
     $deliveryTime = calculateDeliveryTime();
     foreach ($products->getProducts() as $i => $product) {
         if (!empty($_POST["products"][$i])) {
             $priceOfThisOrder += ($product->getPrice() * ($_POST["products"][$i]));
             $alertMessage .= "<li>" . $_POST["products"][$i] . "x " . $product->getName() . "</li>";
-//            $mailMessage .= $_POST["products"][$i] . "x " . $product["name"] . "(\r\n)";
+//          $mailMessage .= $_POST["products"][$i] . "x " . $product["name"] . "(\r\n)";
             unset($_POST["product"]);
         }
     }
@@ -128,22 +90,20 @@ function displayBoughtItems(object $products, string $totalValue): string
     return $deliveryTime;
 }
 
-#[NoReturn] function submitOrder($products, $totalValue) : void
+#[NoReturn] function submitOrder($products, $totalValue): void
 {
     $_SESSION["message"] = displayBoughtItems($products, $totalValue);
     unset($_POST["email"]);
     $host = $_SERVER['HTTP_HOST'];
     $uri = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-    $extra = 'index.php?food=1';
+    $extra = 'index.php?food=' . $_GET["food"];
 
     header("Location: http://$host$uri/$extra");
     exit;
 }
 
-function getProductList(): object
+function getProductList(): ProductList
 {
-//    $page = basename($_SERVER['REQUEST_URI']);
-
     if ($_GET["food"] == 0) {
         return new ProductList([
             new Product('Cola', 2),
@@ -154,6 +114,7 @@ function getProductList(): object
 
     } else if ($_GET["food"] == 2) {
         return new ProductList([
+            new Product('Club Ham', 3.20),
             new Product('Club Cheese', 3),
             new Product('Club Cheese & Ham', 4),
             new Product('Club Chicken', 4),
@@ -196,7 +157,8 @@ class Product
     }
 }
 
-class ProductList {
+class ProductList
+{
 
     private array $products;
 
@@ -212,18 +174,42 @@ class ProductList {
 }
 
 $products = getProductList();
-
 $totalValue = getTotalValue();
-
-$email_error = $street_error = $streetnumber_error = $city_error = $zipcode_error = "";
+$errorArray = [
+    "email" => "",
+    "street" => "",
+    "streetnumber" => "",
+    "city" => "",
+    "zipcode" => "",
+];
 
 if (isset($_POST["submit"])) {
     setSessionVariables();
-    if (validateForm($email_error, $street_error, $streetnumber_error, $city_error, $zipcode_error)) {
+
+    foreach ($errorArray as $key => $value) {
+        if (empty($_POST["$key"])) {
+            $errorArray[$key] = "* " . $key . " is a required field";
+        } else if (($key == "streetnumber" || $key == "zipcode") && (!is_numeric($_POST["$key"]))) {
+            $errorArray[$key] = "* " . $key . " must be a number";
+        } else if (($key == "email") && filter_var($_POST["$key"], FILTER_VALIDATE_EMAIL) == false) {
+            $errorArray[$key] = "* This" . $key . "-address is not valid";
+        } else {
+            unset($errorArray[$key]);
+        }
+    }
+
+    if (!is_numeric($_POST["zipcode"])) {
+        $_POST["zipcode"] = "";
+        $error = "* Your zipcode is not a number";
+    }
+
+    if (empty($errorArray)) {
         submitOrder($products, $totalValue);
     }
-} else if(isset($_SESSION["street"], $_SESSION["streetnumber"], $_SESSION["city"], $_SESSION["zipcode"])) {
-    displaySessions();
-}
+
+} else
+    if (isset($_SESSION["street"], $_SESSION["streetnumber"], $_SESSION["city"], $_SESSION["zipcode"])) {
+        displaySessions();
+    }
 
 require 'form-view.php';

@@ -44,7 +44,7 @@ error_reporting(E_ALL);
             <div class="form-group col-md-6">
                 <label for="email">E-mail:</label>
                 <input type="text" id="email" name="email" value="<?php echo isset($_POST["email"]) ? $_POST["email"] : ''; ?>" class="form-control" />
-                <span class="text-danger"><?php echo $email_error ?></span>
+                <span class="text-danger"><?php echo isset($errorArray["email"]) ? $errorArray["email"] : '' ?></span>
             </div>
             <div></div>
         </div>
@@ -56,24 +56,24 @@ error_reporting(E_ALL);
                 <div class="form-group col-md-6">
                     <label for="street">Street:</label>
                     <input type="text" name="street" id="street" value="<?php echo isset($_POST["street"]) ? $_POST["street"] : ''; ?>" class="form-control">
-                    <span class="text-danger"><?php echo $street_error ?></span>
+                    <span class="text-danger"><?php echo isset($errorArray["street"]) ? $errorArray["street"] : '' ?></span>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="streetnumber">Street number:</label>
                     <input type="text" id="streetnumber" name="streetnumber" value="<?php echo isset($_POST["streetnumber"]) ? $_POST["streetnumber"] : ''; ?>" class="form-control">
-                    <span class="text-danger"><?php echo $streetnumber_error ?></span>
+                    <span class="text-danger"><?php echo isset($errorArray["streetnumber"]) ? $errorArray["streetnumber"] : '' ?></span>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="city">City:</label>
                     <input type="text" id="city" name="city" value="<?php echo isset($_POST["city"]) ? $_POST["city"] : ''; ?>" class="form-control">
-                    <span class="text-danger"><?php echo $city_error ?></span>
+                    <span class="text-danger"><?php echo isset($errorArray["city"]) ? $errorArray["city"] : '' ?></span>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="zipcode">Zipcode</label>
                     <input type="text" id="zipcode" name="zipcode" value="<?php echo isset($_POST["zipcode"]) ? $_POST["zipcode"] : ''; ?>" class="form-control">
-                    <span class="text-danger"><?php echo $zipcode_error ?></span>
+                    <span class="text-danger"><?php echo isset($errorArray["zipcode"]) ? $errorArray["zipcode"] : '' ?></span>
                 </div>
             </div>
         </fieldset>
